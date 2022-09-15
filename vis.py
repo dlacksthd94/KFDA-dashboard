@@ -82,12 +82,15 @@ if menu == 'Chart':
                 list_bio_marker.append(bio_marker)
         miami.filter(drug, model, p_value, list_bio_marker)
     
-    submit = sidebar.button("Submit")
+    # submit = sidebar.button("Submit")
 
     # if submit:
-    with st.spinner("Wait for it..."):
-        fig = miami.render()
-        st.plotly_chart(fig, use_container_width=True, width=50)
+    if list_bio_marker:
+        with st.spinner("Wait for it..."):
+            fig = miami.render()
+            st.plotly_chart(fig, use_container_width=True, width=50)
+    else:
+        'Please select at least one metabolite'
 
 elif menu == 'Experiment':
     st.markdown('_TO BE UPDATED_')
