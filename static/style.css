@@ -1,0 +1,69 @@
+/* The sidebar menu */
+.leftnav {
+	width: 22rem;
+	/* Set the width of the sidebar */
+	z-index: 1;
+	/* Stay on top */
+	overflow-x: hidden;
+	/*background-color: #f3f3f3;*/
+	background-image: radial-gradient(#dddddd 0.5px, #f3f3f3 0.5px);
+	background-size: 6px 6px;
+}
+
+/* The navigation menu links */
+.leftnav a {
+	text-decoration: none;
+	display: block;
+}
+
+.rightnav {
+	width: 32rem;
+	/* Set the width of the sidebar */
+	z-index: 1;
+	/* Stay on top */
+	overflow-x: hidden;
+	opacity: 0.8;
+	background-image: radial-gradient(#dddddd 0.5px, #f9f9f9 0.5px);
+	background-size: 10px 10px;
+}
+
+/* Style page content */
+.main {
+	margin-left: 22rem;
+	/* Same as the width of the sidebar */
+	/*margin-right: 32rem;*/
+	height: 100vh;
+}
+
+.main table {
+	max-width: 960px;
+	box-shadow: none;
+	border-top: 2px solid black;
+	border-bottom: 2px solid black;
+}
+
+.main table tr.tline {
+	border-top: 1px solid black;
+}
+
+.main table td.rline,
+.main table th.rline {
+	border-right: 1px solid black;
+}
+
+.main table th,
+.main table td {
+	padding: 3px;
+}
+
+#spinner {
+	position: absolute;
+	opacity: 0.7;
+	background: white;
+	z-index: 10;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	font-size: 4rem;
+}

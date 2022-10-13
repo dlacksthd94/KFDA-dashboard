@@ -2,8 +2,8 @@ pandas
 numpy
 sklearn
 pillow
-finance-datareader
 matplotlib
 streamlit
 seaborn
 plotly
+statsmodels
