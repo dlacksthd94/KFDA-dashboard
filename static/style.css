@@ -54,6 +54,7 @@
 .main table th,
 .main table td {
 	padding: 3px;
+	line-height: 120%;
 }
 
 #spinner {
@@ -66,4 +67,8 @@
 	bottom: 0;
 	left: 0;
 	font-size: 4rem;
+}
+
+.form-group.col-sm-6 label {
+	font-size: 80%;
 }
