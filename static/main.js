@@ -301,8 +301,9 @@ init = () => {
     $.each(data.response, (i, v) => {
       $("#meta_drug").append(
         `<div class="form-check">
-          <input class="form-check-input" type="checkbox" value="${v}" checked>
-          <label class="form-check-label">${v}</label>
+          <label class="form-check-label" for="checkbox${i}" style="cursor:pointer">
+          <input class="form-check-input" type="checkbox" value="${v}" id="checkbox${i}" checked style="cursor:pointer">
+          ${v}</label>
         </div>`
       );
     });
