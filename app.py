@@ -95,7 +95,7 @@ def api():
                     int(row[cols[1]]),
                     (float(row[c]) for c in cols[2:]),
                 )
-                out.append(row[:10] + [cov, n, beta, se, p])  # each data
+                out.append(row[2:5] + row[7:10] + [cov, n, beta, se, p])  # each data
                 group_cnt[row[7]] += 1  # num of each 'Groups'
                 highs.append(beta + 1.96 * se)  # CI
                 lows.append(beta - 1.96 * se)
@@ -147,7 +147,7 @@ def api():
                     int(row[cols[1]]),
                     (float(row[c]) for c in cols[2:]),
                 )
-                out.append(row[:10] + [cov, n, beta, se, p])  # each data
+                out.append(row[2:5] + row[7:10] + [cov, n, beta, se, p])  # each data
                 # drug_cnt[row[7]] += 1  # num of each 'Groups'
                 highs.append(beta + 1.96 * se)  # CI
                 lows.append(beta - 1.96 * se)
