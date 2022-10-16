@@ -41,7 +41,7 @@ def api():
             row[7] = "Amino acids"
     args = request.args  # flask gets request. (e.g. "/api?mode=list&query=drug")
     mode = args.get("mode")  # mode
-    if mode == "list":
+    if mode == "sidebar":
         query = args.get("query")  # query
         if query == "drug":
             return dict(
@@ -87,16 +87,16 @@ def api():
             return dict(status=3)
 
         # get chart info from df
-        out, meta_cnt, highs, lows = [], dd(int), [0], [0]
+        out, group_cnt, highs, lows = [], dd(int), [0], [0]
         for row in df[1:]:
-            if row[9] == "%s_bf" % drug and row[7] in meta.split("|"):
+            if row[9] == f"{drug}_bf" and row[7] in meta.split("|"):
                 cov, n, (beta, se, p) = (
                     row[cols[0]],
                     int(row[cols[1]]),
                     (float(row[c]) for c in cols[2:]),
                 )
                 out.append(row[:10] + [cov, n, beta, se, p])  # each data
-                meta_cnt[row[7]] += 1  # num of each 'Groups'
+                group_cnt[row[7]] += 1  # num of each 'Groups'
                 highs.append(beta + 1.96 * se)  # CI
                 lows.append(beta - 1.96 * se)
 
@@ -106,7 +106,7 @@ def api():
             response=dict(
                 meta=dict(
                     count=len(out),
-                    group_count=meta_cnt,
+                    group_cnt=group_cnt,
                     minval=min(lows),
                     maxval=max(highs),
                 ),
@@ -115,54 +115,58 @@ def api():
             ),
         )
 
-    # elif mode == "meta_chart":
-    #     drug, model, pvalue, meta = [
-    #         args.get(val) for val in ["drug", "model", "pvalue", "meta"]
-    #     ]
+    elif mode == "meta_chart":
+        meta, model, pvalue, drug = [
+            args.get(val) for val in ["meta", "model", "pvalue", "drug"]
+        ]
 
-    #     # filtering option: model
-    #     if model == "1":
-    #         cols = list(range(10, 15))
-    #     elif model == "2":
-    #         cols = list(range(15, 20))
-    #     elif model == "3":
-    #         cols = list(range(20, 25))
-    #     else:
-    #         return dict(status=2)
+        # filtering option: model
+        if model == "1":
+            cols = list(range(10, 15))
+        elif model == "2":
+            cols = list(range(15, 20))
+        elif model == "3":
+            cols = list(range(20, 25))
+        else:
+            return dict(status=2)
 
-    #     # filtering option: p-value
-    #     if pvalue == "original":
-    #         pass
-    #     elif pvalue == "FDR":
-    #         cols[4] = 24 + int(model)
-    #     else:
-    #         return dict(status=3)
+        # filtering option: p-value
+        if pvalue == "original":
+            pass
+        elif pvalue == "FDR":
+            cols[4] = 24 + int(model)
+        else:
+            return dict(status=3)
 
-    #     # get chart info from df
-    #     out, meta_cnt, highs, lows = [], dd(int), [0], [0]
-    #     for row in df[1:]:
-    #         if row[9] == f"{drug}_bf" and row[7] in meta.split("|"):
-    #             cov, n, (beta, se, p) = row[cols[0]], int(row[cols[1]]), (float(row[c]) for c in cols[2:])
-    #             out.append(row[:10] + [cov, n, beta, se, p]) # each data
-    #             meta_cnt[row[7]] += 1 # num of each 'Groups'
-    #             highs.append(beta + 1.96 * se) # CI
-    #             lows.append(beta - 1.96 * se)
+        # get chart info from df
+        out, drug_cnt, highs, lows = [], dd(int), [0], [0]
+        for row in df[1:]:
+            if row[3] == meta and row[9][:-3] in drug.split("|"):
+                cov, n, (beta, se, p) = (
+                    row[cols[0]],
+                    int(row[cols[1]]),
+                    (float(row[c]) for c in cols[2:]),
+                )
+                out.append(row[:10] + [cov, n, beta, se, p])  # each data
+                # drug_cnt[row[7]] += 1  # num of each 'Groups'
+                highs.append(beta + 1.96 * se)  # CI
+                lows.append(beta - 1.96 * se)
 
-    #     return dict(
-    #         status=0,
-    #         query=dict(drug=drug, model=model, pvalue=pvalue, meta=meta),
-    #         response=dict(
-    #             meta=dict(
-    #                 count=len(out),
-    #                 group_count=meta_cnt,
-    #                 minval=min(lows),
-    #                 maxval=max(highs),
-    #             ),
-    #             header=df[0][:10] + ["cov", "n", "beta", "se", "p"],
-    #             content=out,
-    #         ),
-    #     )
-
+        return dict(
+            status=0,
+            query=dict(meta=meta, model=model, pvalue=pvalue, drug=drug),
+            response=dict(
+                drug=dict(
+                    count=len(out),
+                    # group_cnt=drug_cnt,
+                    minval=min(lows),
+                    maxval=max(highs),
+                ),
+                header=df[0][:10] + ["cov", "n", "beta", "se", "p"],
+                content=out,
+            ),
+        )
+        
     return dict(status=1)
 
 

@@ -29,77 +29,142 @@ $("#generate").click(() => {
   $("#spinner").removeClass("d-none"); // ???
 
   // get props from filtering options
-  if ($("#mode_drug").prop("checked")) mode = "drug";
-  else if ($("#mode_meta").prop("checked")) mode = "meta";
-  prop = {
-    mode: mode + "_chart",
-    drug: $("#drug_meta").val(), // the selected drug
-    model: $("#drug_model").val(), // the selected model type
-    pvalue: $("#drug_pvalue").val(), // the selected p-value type
-    meta: $("#meta_drug input:checked") // the list of selected metabolites
-      .map((i, element) => {
-        return element.value;
-      }) // extract the value
-      .get() // to a list
-      .join("|"),
-  };
+  if ($("#mode_drug").prop("checked")) {
+    prop = {
+      mode: "drug_chart",
+      drug: $("#drug_meta").val(), // the selected drug
+      model: $("#drug_model").val(), // the selected model type
+      pvalue: $("#drug_pvalue").val(), // the selected p-value type
+      meta: $("#meta_drug input:checked") // the list of selected metabolites
+        .map((i, element) => {
+          return element.value;
+        }) // extract the value
+        .get() // to a list
+        .join("|"),
+    };
 
-  tmpl_table = $.templates("#tmpl_table");
-  tmpl_row = $.templates("#tmpl_row");
-  seen_meta = []; // distinct elements of metabolites
-  $("#chart").empty();
+    tmpl_table_header_drug = $.templates("#tmpl_table_header_drug");
+    tmpl_table_row_drug = $.templates("#tmpl_table_row_drug");
+    seen_meta = []; // distinct elements of metabolites
+    $("#chart").empty();
 
-  // send request to flask with prop arguments
-  $.getJSON("/api?" + $.param(prop), (data) => {
-    $("#chart").append(
-      tmpl_table.render({ title: toTitleCase(data.query.drug) })
-    );
-
-    $.each(data.response.content, (i, row) => {
-      title = row[3];
-      group = row[7];
-      seen = seen_meta.includes(group); // if the selected metabolite has ever been encountered
-      if (!seen) seen_meta.push(group); // append the metabolite to the `seen_meta`
-      tr_cls = seen ? "" : "tline"; // in [style.css], tr.tline have an attribute `{border-top: 1px solid black;}`
-      num_row_in_group = data.response.meta.group_count[group];
-      firsttd = seen ? "" : `<td rowspan=${num_row_in_group}>${group}</td>`; // the first column ("Group")
-
-      if (row[14] < 0.001) star = "***";
-      else if (row[14] < 0.01) star = "**";
-      else if (row[14] < 0.05) star = "*";
-      else star = "";
-
-      color = row[12] > 0 ? "rgb(251,180,174)" : "rgb(179,205,227)";
-
-      [
-        coef_origin,
-        coef_offset,
-        error_bar_left,
-        error_bar_right,
-        error_bar_origin,
-      ] = data2svg(
-        data.response.meta.minval,
-        data.response.meta.maxval,
-        row[12],
-        row[13]
+    // send request to flask with prop arguments
+    $.getJSON("/api?" + $.param(prop), (data) => {
+      $("#chart").append(
+        tmpl_table_header_drug.render({ title: toTitleCase(data.query.drug) })
       );
 
-      $("#chart table tbody").append(
-        tmpl_row.render({
-          tr_cls: tr_cls,
-          firsttd: firsttd,
-          title: title,
-          star: star,
-          coef_origin: coef_origin,
-          coef_offset: coef_offset,
-          error_bar_left: error_bar_left,
-          error_bar_right: error_bar_right,
-          error_bar_origin: error_bar_origin,
-          color: color,
-        })
-      );
+      $.each(data.response.content, (i, row) => {
+        meta_group = row[7];
+        meta_name = row[3];
+        seen = seen_meta.includes(meta_group); // if the selected metabolite has ever been encountered
+        if (!seen) seen_meta.push(meta_group); // append the metabolite to the `seen_meta`
+        tr_cls = seen ? "" : "tline"; // in [style.css], tr.tline have an attribute `{border-top: 1px solid black;}`
+        num_row_in_group = data.response.meta.group_cnt[meta_group];
+        firsttd = seen ? "" : `<td rowspan=${num_row_in_group}>${meta_group}</td>`; // the first column ("Group")
+
+        if (row[14] < 0.001) star = "***";
+        else if (row[14] < 0.01) star = "**";
+        else if (row[14] < 0.05) star = "*";
+        else star = "";
+
+        color = row[12] > 0 ? "rgb(251,180,174)" : "rgb(179,205,227)";
+
+        [
+          coef_origin,
+          coef_offset,
+          error_bar_left,
+          error_bar_right,
+          error_bar_origin,
+        ] = data2svg(
+          data.response.meta.minval,
+          data.response.meta.maxval,
+          row[12],
+          row[13]
+        );
+
+        $("#chart table tbody").append(
+          tmpl_table_row_drug.render({
+            tr_cls: tr_cls,
+            firsttd: firsttd,
+            meta_name: meta_name,
+            star: star,
+            coef_origin: coef_origin,
+            coef_offset: coef_offset,
+            error_bar_left: error_bar_left,
+            error_bar_right: error_bar_right,
+            error_bar_origin: error_bar_origin,
+            color: color,
+          })
+        );
+      });
     });
-  });
+  } else if ($("#mode_meta").prop("checked")) {
+    prop = {
+      mode: "meta_chart",
+      meta: $("#drug_meta").val(), // the selected metabolite
+      model: $("#drug_model").val(), // the selected model type
+      pvalue: $("#drug_pvalue").val(), // the selected p-value type
+      drug: $("#meta_drug input:checked") // the list of selected drugs
+        .map((i, element) => {
+          return element.value;
+        }) // extract the value
+        .get() // to a list
+        .join("|"),
+    };
+
+    tmpl_table_header_meta = $.templates("#tmpl_table_header_meta");
+    tmpl_table_row_meta = $.templates("#tmpl_table_row_meta");
+
+    // seen_meta = []; // distinct elements of metabolites
+    $("#chart").empty();
+
+    // send request to flask with prop arguments
+    $.getJSON("/api?" + $.param(prop), (data) => {
+      $("#chart").append(
+        tmpl_table_header_meta.render({ title: toTitleCase(data.query.meta) })
+      );
+
+      $.each(data.response.content, (i, row) => {
+        drug_name = row[9];
+        tr_cls = (i === 0) ? "tline" : ""; // in [style.css], tr.tline have an attribute `{border-top: 1px solid black;}`
+        
+        if (row[14] < 0.001) star = "***";
+        else if (row[14] < 0.01) star = "**";
+        else if (row[14] < 0.05) star = "*";
+        else star = "";
+
+        color = row[12] > 0 ? "rgb(251,180,174)" : "rgb(179,205,227)";
+
+        [
+          coef_origin,
+          coef_offset,
+          error_bar_left,
+          error_bar_right,
+          error_bar_origin,
+        ] = data2svg(
+          data.response.drug.minval,
+          data.response.drug.maxval,
+          row[12],
+          row[13]
+        );
+
+        $("#chart table tbody").append(
+          tmpl_table_row_meta.render({
+            tr_cls: tr_cls,
+            drug_name: drug_name,
+            star: star,
+            coef_origin: coef_origin,
+            coef_offset: coef_offset,
+            error_bar_left: error_bar_left,
+            error_bar_right: error_bar_right,
+            error_bar_origin: error_bar_origin,
+            color: color,
+          })
+        );
+      });
+    });
+  }
 
   $("#spinner").addClass("d-none");
 });
@@ -119,7 +184,6 @@ $("#drug_select_all").click(() => {
 
 // event listener("Drug" button)
 $("#mode_drug").click(() => {
-  // $.views.settings.delimiters("<%", "%>"); // used to edit `.tmpl_table`, `.tmpl_row` tag in [index.html]
   $("#spinner").removeClass("d-none"); // ???
 
   // make filtering option("Drug" dropwdown)
@@ -129,7 +193,7 @@ $("#mode_drug").click(() => {
       `<label class="mb-2">Drug</label>
       <select id="drug_meta" class="form-select mb-4"></select>`
     );
-  $.getJSON("/api?mode=list&query=drug", (data) => {
+  $.getJSON("/api?mode=sidebar&query=drug", (data) => {
     $.each(data.response, (i, v) => {
       $("#drug_meta").append(`<option value="${v}">${toTitleCase(v)}</option>`);
     });
@@ -138,7 +202,7 @@ $("#mode_drug").click(() => {
   // make filtering option("Metabolites" checkboxes)
   $("#drug_select_all").siblings("label").text("Metabolites");
   $("#meta_drug").empty();
-  $.getJSON("/api?mode=list&query=meta_group", (data) => {
+  $.getJSON("/api?mode=sidebar&query=meta_group", (data) => {
     $.each(data.response, (i, v) => {
       $("#meta_drug").append(
         `<div class="form-check">
@@ -154,12 +218,11 @@ $("#mode_drug").click(() => {
 
 // event listener("Metabolite" button)
 $("#mode_meta").click(() => {
-  // $.views.settings.delimiters("<%", "%>"); // used to edit `.tmpl_table`, `.tmpl_row` tag in [index.html]
   $("#spinner").removeClass("d-none"); // ???
 
   // make filtering option(metabolite "Group" dropdown)
-  $("#drug_meta").empty().siblings('label').text('Metabolite');
-  $.getJSON("/api?mode=list&query=meta", (data) => {
+  $("#drug_meta").empty().siblings("label").text("Metabolite");
+  $.getJSON("/api?mode=sidebar&query=meta", (data) => {
     for (group of Object.keys(data.response)) {
       html = `<optgroup label="${group}">`;
       list_subgroup = data.response[group];
@@ -182,19 +245,19 @@ $("#mode_meta").click(() => {
   //     <div class="form-group col-sm-6">
   //       <label class="mb-2">Name</label>
   //       <select id="drug_meta_sub" class="form-select mb-4"></select>
-  //     </div>  
+  //     </div>
   //   </div>`
   // );
 
   // // make filtering option(metabolite "Group" dropdown)
-  // $.getJSON("/api?mode=list&query=meta_group", (data) => {
+  // $.getJSON("/api?mode=sidebar&query=meta_group", (data) => {
   //   $.each(data.response, (i, v) => {
   //     $("#drug_meta").append(`<option value="${v}">${toTitleCase(v)}</option>`);
   //   });
   // });
 
   // // make filtering option(metabolite "Name" dropdown)
-  // $.getJSON("/api?mode=list&query=meta_name", (data) => {
+  // $.getJSON("/api?mode=sidebar&query=meta_name", (data) => {
   //   $.each(data.response, (i, v) => {
   //     $("#drug_meta_sub").append(
   //       `<option value="${v}">${toTitleCase(v)}</option>`
@@ -205,7 +268,7 @@ $("#mode_meta").click(() => {
   // make filtering option("Drugs" checkboxes)
   $("#drug_select_all").siblings("label").text("Drugs"); // make 'Metabolites' label to 'Drugs'
   $("#meta_drug").empty();
-  $.getJSON("/api?mode=list&query=drug", (data) => {
+  $.getJSON("/api?mode=sidebar&query=drug", (data) => {
     $.each(data.response, (i, v) => {
       $("#meta_drug").append(
         `<div class="form-check">
@@ -221,12 +284,12 @@ $("#mode_meta").click(() => {
 
 // initialize the ui
 init = () => {
-  $.views.settings.delimiters("<%", "%>"); // used to edit `.tmpl_table`, `.tmpl_row` tag in [index.html]
+  $.views.settings.delimiters("<%", "%>"); // used to edit templates in [index.html]
   $("#spinner").removeClass("d-none"); // ???
 
   // make filtering option("Drug" dropwdown)
   $("#drug_meta").empty();
-  $.getJSON("/api?mode=list&query=drug", (data) => {
+  $.getJSON("/api?mode=sidebar&query=drug", (data) => {
     $.each(data.response, (i, v) => {
       $("#drug_meta").append(`<option value="${v}">${toTitleCase(v)}</option>`);
     });
@@ -234,7 +297,7 @@ init = () => {
 
   // make filtering option("Metabolites" checkboxes)
   $("#meta_drug").empty();
-  $.getJSON("/api?mode=list&query=meta_group", (data) => {
+  $.getJSON("/api?mode=sidebar&query=meta_group", (data) => {
     $.each(data.response, (i, v) => {
       $("#meta_drug").append(
         `<div class="form-check">
