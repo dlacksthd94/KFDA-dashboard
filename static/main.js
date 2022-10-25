@@ -1,28 +1,4 @@
-// functions
-toTitleCase = (
-  s // make the fisrt letter upper case
-) => s.replace(/\w\S*/g, (t) => t.charAt(0).toUpperCase() + t.substr(1));
-
-data2svg = (minval, maxval, coef, se) => {
-  conv = (x) => (500 * (x - minval)) / (maxval - minval); // 500 * (min-max scaling)
-  if (coef > 0) {
-    return [
-      conv(0), // coef origin
-      conv(coef) - conv(0), // coef offset
-      conv(coef - 1.96 * se), // CI
-      conv(coef + 1.96 * se),
-      conv(coef), // CI origin
-    ];
-  } else {
-    return [
-      conv(coef),
-      conv(0) - conv(coef),
-      conv(coef - 1.96 * se),
-      conv(coef + 1.96 * se),
-      conv(coef),
-    ];
-  }
-};
+import { toTitleCase, data2svg } from "./utils.js";
 
 // event listener("Generate" button)
 $("#generate").click(() => {
@@ -30,7 +6,7 @@ $("#generate").click(() => {
 
   // get props from filtering options
   if ($("#mode_drug").prop("checked")) {
-    prop = {
+    let prop = {
       mode: "drug_chart",
       drug: $("#drug_meta").val(), // the selected drug
       model: $("#drug_model").val(), // the selected model type
@@ -43,9 +19,9 @@ $("#generate").click(() => {
         .join("|"),
     };
 
-    tmpl_table_header_drug = $.templates("#tmpl_table_header_drug");
-    tmpl_table_row_drug = $.templates("#tmpl_table_row_drug");
-    seen_meta = []; // distinct elements of metabolites
+    let tmpl_table_header_drug = $.templates("#tmpl_table_header_drug");
+    let tmpl_table_row_drug = $.templates("#tmpl_table_row_drug");
+    let seen_meta = []; // distinct elements of metabolites
 
     // send request to flask with prop arguments
     $.getJSON("/api?" + $.param(prop), (data) => {
@@ -56,7 +32,7 @@ $("#generate").click(() => {
         );
 
       $.each(data.response.content, (i, row) => {
-        [
+        let [
           meta_full_name,
           meta_name,
           meta_abb_name,
@@ -70,22 +46,23 @@ $("#generate").click(() => {
           p_value,
         ] = row;
 
-        seen = seen_meta.includes(meta_group); // if the selected metabolite has ever been encountered
+        let seen = seen_meta.includes(meta_group); // if the selected metabolite has ever been encountered
         if (!seen) seen_meta.push(meta_group); // append the metabolite to the `seen_meta`
-        tr_cls = seen ? "" : "tline"; // in [style.css], tr.tline have an attribute `{border-top: 1px solid black;}`
-        num_row_in_group = data.response.meta.group_cnt[meta_group];
-        firsttd = seen
+        let tr_cls = seen ? "" : "tline"; // in [style.css], tr.tline have an attribute `{border-top: 1px solid black;}`
+        let num_row_in_group = data.response.meta.group_cnt[meta_group];
+        let firsttd = seen
           ? ""
           : `<td rowspan=${num_row_in_group}>${meta_group}</td>`; // the first column ("Group")
 
+        let star;
         if (p_value < 0.001) star = "***";
         else if (p_value < 0.01) star = "**";
         else if (p_value < 0.05) star = "*";
         else star = "";
 
-        color = beta > 0 ? "rgb(251,180,174)" : "rgb(179,205,227)";
+        let color = beta > 0 ? "rgb(251,180,174)" : "rgb(179,205,227)";
 
-        [
+        let [
           coef_origin,
           coef_offset,
           error_bar_left,
@@ -126,7 +103,7 @@ $("#generate").click(() => {
       });
     });
   } else if ($("#mode_meta").prop("checked")) {
-    prop = {
+    let prop = {
       mode: "meta_chart",
       meta: $("#drug_meta").val(), // the selected metabolite
       model: $("#drug_model").val(), // the selected model type
@@ -139,8 +116,8 @@ $("#generate").click(() => {
         .join("|"),
     };
 
-    tmpl_table_header_meta = $.templates("#tmpl_table_header_meta");
-    tmpl_table_row_meta = $.templates("#tmpl_table_row_meta");
+    let tmpl_table_header_meta = $.templates("#tmpl_table_header_meta");
+    let tmpl_table_row_meta = $.templates("#tmpl_table_row_meta");
 
     // $("#chart").empty();
 
@@ -153,7 +130,7 @@ $("#generate").click(() => {
         );
 
       $.each(data.response.content, (i, row) => {
-        [
+        let [
           meta_full_name,
           meta_name,
           meta_abb_name,
@@ -168,16 +145,17 @@ $("#generate").click(() => {
         ] = row;
         drug_name = drug_name.slice(0, -3);
 
-        tr_cls = i === 0 ? "tline" : ""; // in [style.css], tr.tline have an attribute `{border-top: 1px solid black;}`
+        let tr_cls = i === 0 ? "tline" : ""; // in [style.css], tr.tline have an attribute `{border-top: 1px solid black;}`
 
+        let star;
         if (p_value < 0.001) star = "***";
         else if (p_value < 0.01) star = "**";
         else if (p_value < 0.05) star = "*";
         else star = "";
 
-        color = beta > 0 ? "rgb(251,180,174)" : "rgb(179,205,227)";
+        let color = beta > 0 ? "rgb(251,180,174)" : "rgb(179,205,227)";
 
-        [
+        let [
           coef_origin,
           coef_offset,
           error_bar_left,
@@ -223,8 +201,8 @@ $("#generate").click(() => {
 
 // event listner("Select/Deselect All" button)
 $("#drug_select_all").click(() => {
-  obj = $("#drug_select_all");
-  text = obj.text();
+  let obj = $("#drug_select_all");
+  let text = obj.text();
   if (text === "Deselect All") {
     $("#meta_drug input").prop("checked", false); // find a tag with #meta_drug and then input tags in it, chaning their "checked" prop.
     obj.text("Select All");
@@ -277,10 +255,10 @@ $("#mode_meta").click(() => {
   // make filtering option(metabolite "Group" dropdown)
   $("#drug_meta").empty().siblings("label").text("Metabolite");
   $.getJSON("/api?mode=sidebar&query=meta", (data) => {
-    for (group of Object.keys(data.response)) {
-      html = `<optgroup label="${group}">`;
-      list_subgroup = data.response[group];
-      for (subgroup of list_subgroup) {
+    for (let group of Object.keys(data.response)) {
+      let html = `<optgroup label="${group}">`;
+      let list_subgroup = data.response[group];
+      for (let subgroup of list_subgroup) {
         html += `<option value="${subgroup}">${toTitleCase(subgroup)}</option>`;
       }
       $("#drug_meta").append(html);
@@ -339,7 +317,7 @@ $("#mode_meta").click(() => {
 });
 
 // initialize the ui
-init = () => {
+const init = () => {
   $.views.settings.delimiters("<%", "%>"); // used to edit templates in [index.html]
   $("#spinner").removeClass("d-none"); // ???
 
