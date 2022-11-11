@@ -316,6 +316,89 @@ $("#mode_meta").click(() => {
   $("#generate").click(); // sometimes doensn't work.
 });
 
+// make filtering option(metabolite "Name" in the table)
+$(document).on("click", '#meta_name', function (x) {
+  let meta = x.currentTarget.textContent;
+
+  $("#mode_meta").click();
+  
+  // make filtering option(metabolite "Group" dropdown)
+  $("#drug_meta").empty().siblings("label").text("Metabolite");
+  $.getJSON("/api?mode=sidebar&query=meta", (data) => {
+    for (let group of Object.keys(data.response)) {
+      let html = `<optgroup label="${group}">`;
+      let list_subgroup = data.response[group];
+      for (let subgroup of list_subgroup) {
+        if (subgroup == meta) {
+          html += `<option value="${subgroup}" selected>${toTitleCase(subgroup)}</option>`;
+        } else {
+          html += `<option value="${subgroup}">${toTitleCase(subgroup)}</option>`;
+        }        
+      }
+      $("#drug_meta").append(html);
+    }
+  });
+
+  // make filtering option("Drugs" checkboxes)
+  $("#drug_select_all").siblings("label").text("Drugs"); // make 'Metabolites' label to 'Drugs'
+  $("#meta_drug").empty();
+  $.getJSON("/api?mode=sidebar&query=drug", (data) => {
+    $.each(data.response, (i, v) => {
+      $("#meta_drug").append(
+        `<div class="form-check">
+          <label class="form-check-label" for="checkbox${i}" style="cursor:pointer">
+          <input class="form-check-input" type="checkbox" value="${v}" id="checkbox${i}" checked style="cursor:pointer">
+          ${v}</label>
+        </div>`
+      );
+    });
+  });
+
+  setTimeout(() => {$("#generate").click()}, 300)
+});
+
+// make filtering option(drug "Name" in the table)
+$(document).on("click", '#drug_name', function (x) {
+  let drug = x.currentTarget.textContent;
+  
+  $("#mode_drug").click();
+
+  // make filtering option("Drug" dropwdown)
+  $("#wrapper_drug_meta")
+    .empty()
+    .append(
+      `<label class="mb-2">Drug</label>
+      <select id="drug_meta" class="form-select mb-4"></select>`
+    );
+  $.getJSON("/api?mode=sidebar&query=drug", (data) => {
+    $.each(data.response, (i, v) => {
+      if (v == drug) {
+        $("#drug_meta").append(`<option value="${v}" selected>${toTitleCase(v)}</option>`);
+      } else {
+        $("#drug_meta").append(`<option value="${v}">${toTitleCase(v)}</option>`);
+      }
+      
+    });
+  });
+
+  // make filtering option("Metabolites" checkboxes)
+  $("#drug_select_all").siblings("label").text("Metabolites");
+  $("#meta_drug").empty();
+  $.getJSON("/api?mode=sidebar&query=meta_group", (data) => {
+    $.each(data.response, (i, v) => {
+      $("#meta_drug").append(
+        `<div class="form-check">
+          <label class="form-check-label" for="checkbox${i}" style="cursor:pointer">
+          <input class="form-check-input" type="checkbox" value="${v}" id="checkbox${i}" checked style="cursor:pointer">
+          ${v}</label>
+        </div>`
+      );
+    });
+  });
+
+  setTimeout(() => {$("#generate").click()}, 300)
+});
+
 // initialize the ui
 const init = () => {
   $.views.settings.delimiters("<%", "%>"); // used to edit templates in [index.html]
@@ -342,7 +425,8 @@ const init = () => {
       );
     });
     $("#spinner").addClass("d-none");
-    $("#generate").click(); // sometimes doensn't work.
+    setTimeout(() => {$("#generate").click()}, 50)
+    // $("#generate").click(); // sometimes doensn't work.
   });
 };
 
