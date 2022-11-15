@@ -35,7 +35,8 @@ def index():
 
 @app.route("/api")
 def api():
-    df = read_csv("../../outcome/metab_all.csv")
+    # df = read_csv("../../outcome/metab_all.csv")
+    df = read_csv("./data/metab_all.csv")
     for row in df:
         if row[7] in ["Branched-chain amino acids", "Aromatic amino acids"]:
             row[7] = "Amino acids"
