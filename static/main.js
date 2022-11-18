@@ -354,7 +354,7 @@ $(document).on("click", '#meta_name', function (x) {
     });
   });
 
-  setTimeout(() => {$("#generate").click()}, 300)
+  setTimeout(() => {$("#generate").click()}, 500)
 });
 
 // make filtering option(drug "Name" in the table)
@@ -396,7 +396,7 @@ $(document).on("click", '#drug_name', function (x) {
     });
   });
 
-  setTimeout(() => {$("#generate").click()}, 300)
+  setTimeout(() => {$("#generate").click()}, 500)
 });
 
 // initialize the ui
