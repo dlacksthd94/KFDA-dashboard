@@ -8,4 +8,6 @@ A customized dashboard that shows the analysis upon relationship between drug tr
 below are example screen shots.
 
 #### Chart
-<img src="./screenshot_chart.png" width="100%" title="chart"></img>
+<img src="./chart1.jpg" width="100%" title="chart"></img>
+
+<img src="./chart2.jpg" width="100%" title="chart"></img>
